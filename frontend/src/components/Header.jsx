@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser } from '../api/auth';
 
 function Header() {
-  const [user, setUser] = useState(null);
+  const { user, setUser } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,14 +19,15 @@ function Header() {
     };
 
     fetchUser();
-  }, []);
+  },);
 
   const handleLogout = async () => {
     try {
       await logoutUser();
-      navigate('/login');
+      setUser(null); // Сброс состояния пользователя
+      navigate('/login'); // Перенаправление на логин
     } catch (error) {
-      console.error('Ошибка при выходе:', error);
+      console.error('Ошибка при выходе:', error.response?.data || error.message);
     }
   };
 
