@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../api/employee';
-import { getCurrentUser, updateRole } from '../api/auth'; // Импорт правильной функции для проверки авторизации
+import { updateRole } from '../api/auth';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
-import { useNavigate } from 'react-router-dom'; // Для редиректа
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -18,33 +17,19 @@ function Employees() {
     contactInfo: '',
   });
 
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadEmployees = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        console.log('Пользователь авторизован:', currentUser);
-
-        if (currentUser.role !== 'admin') {
-          alert('У вас нет доступа к этой странице.');
-          navigate('/'); // Перенаправление на главную страницу или страницу логина
-          return;
-        }
-
         const data = await fetchEmployees();
         setEmployees(data);
       } catch (error) {
-        console.error('Ошибка проверки авторизации или загрузки сотрудников:', error);
-        alert('Вы не авторизованы. Перенаправляем на страницу входа.');
-        navigate('/'); // Перенаправление на страницу входа
+        console.error('Ошибка при загрузке сотрудников:', error);
       }
     };
 
-    checkAuth();
-  }, [navigate]);
+    loadEmployees();
+  }, []);
 
-  // Остальной код остался без изменений
   const handleSearch = () => {
     const filtered = employees.filter((employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,17 +63,14 @@ function Employees() {
       setEmployees((prevEmployees) =>
         prevEmployees.filter((employee) => employee.id !== employeeId)
       );
-      alert('Сотрудник успешно удалён.');
     } catch (error) {
       console.error('Ошибка при удалении сотрудника:', error);
-      alert('Ошибка при удалении сотрудника.');
     }
   };
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await updateRole(userId, newRole); // Передача роли через API
-      alert('Роль успешно обновлена.');
+      await updateRole(userId, newRole);
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
           emp.userId === userId ? { ...emp, role: newRole } : emp
@@ -96,7 +78,6 @@ function Employees() {
       );
     } catch (error) {
       console.error('Ошибка при изменении роли:', error);
-      alert('Ошибка при изменении роли.');
     }
   };
 
