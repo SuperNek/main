@@ -67,6 +67,7 @@ function LoginPage() {
           contactInfo: formData.contactInfo,
         });
         alert('Регистрация успешна!');
+        
         setIsLoginMode(true);
       } catch (error) {
         console.error('Ошибка при регистрации:', error);

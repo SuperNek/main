@@ -108,7 +108,7 @@ export const login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: JWT_EXPIRES_IN * 1000,
+      maxAge: JWT_EXPIRES_IN * 100000,
     });
 
     res.status(200).json({ message: 'Logged in successfully.' });

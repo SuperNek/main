@@ -10,7 +10,10 @@ export const registerUser = async (userData) => {
 };
 
 export const loginUser = async (credentials) => {
-  const response = await axios.post(`${API_BASE_URL}/login`, credentials);
+  const response = await axios.post(`${API_BASE_URL}/login`, credentials, {
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' },
+  });
   return response.data;
 };
 export const getCurrentUser = async () => {
