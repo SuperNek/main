@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import Footer from '../components/Footer';
-import InfoCard from '../components/InfoCard'; // Импорт InfoCard
+import InfoCard from '../components/InfoCard';
 
 function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -31,23 +31,18 @@ function LoginPage() {
 
     if (isLoginMode) {
       try {
-        // Вход пользователя
         await loginUser({
           username: formData.username,
           password: formData.password,
         });
-
-        // Получение данных о текущем пользователе
         const user = await getCurrentUser();
-
-        // Редирект на страницу в зависимости от роли
         if (user.role === 'admin') {
-          navigate('/admin'); // Редирект на панель администратора
+          navigate('/admin');
         } else {
-          navigate('/dashboard'); // Редирект на основную панель
+          navigate('/dashboard');
         }
       } catch (error) {
-        console.error('Ошибка при входе:', error);
+        console.error('Ошибка при входе:', error.response?.data || error.message);
         setError('Неверный логин или пароль.');
       }
     } else {
@@ -55,9 +50,7 @@ function LoginPage() {
         alert('Пароли не совпадают!');
         return;
       }
-
       try {
-        // Регистрация нового пользователя
         await registerUser({
           username: formData.username,
           password: formData.password,
@@ -67,7 +60,6 @@ function LoginPage() {
           contactInfo: formData.contactInfo,
         });
         alert('Регистрация успешна!');
-        
         setIsLoginMode(true);
       } catch (error) {
         console.error('Ошибка при регистрации:', error);
@@ -80,7 +72,6 @@ function LoginPage() {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
       <div className="flex justify-center items-start mt-8 mb-10 space-x-8">
-        {/* Форма авторизации/регистрации */}
         <div className="w-full max-w-lg bg-white p-6 rounded-md shadow-md">
           <h2 className="text-xl font-bold mb-4 text-gray-800">
             {isLoginMode ? 'Вход' : 'Регистрация'}
@@ -122,53 +113,17 @@ function LoginPage() {
                   onChange={handleChange}
                   placeholder="Введите полное имя"
                 />
-                <InputField
-                  id="position"
-                  label="Должность"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  placeholder="Введите должность"
-                />
-                <InputField
-                  id="department"
-                  label="Отдел"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  placeholder="Введите отдел"
-                />
-                <InputField
-                  id="contactInfo"
-                  label="Контактная информация"
-                  name="contactInfo"
-                  value={formData.contactInfo}
-                  onChange={handleChange}
-                  placeholder="Введите телефон или email"
-                />
               </>
             )}
             <Button type="submit" className="w-full">
               {isLoginMode ? 'Войти' : 'Зарегистрироваться'}
             </Button>
           </form>
-          <div className="text-center mt-4">
-            <button
-              onClick={() => setIsLoginMode(!isLoginMode)}
-              className="text-blue-600 hover:underline transition-colors duration-300"
-            >
-              {isLoginMode
-                ? 'Нет аккаунта? Зарегистрироваться'
-                : 'Уже есть аккаунт? Войти'}
-            </button>
-          </div>
         </div>
-
-        {/* Информационные карточки */}
         <div className="space-y-4">
           <InfoCard
             title="О системе"
-            description="Система профессиональной переподготовки помогает сотрудникам получать необходимые знания и навыки для успешной карьеры."
+            description="Система профессиональной переподготовки помогает сотрудникам получать необходимые знания и навыки."
           />
           <InfoCard
             title="Контакты"

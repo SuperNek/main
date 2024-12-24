@@ -9,29 +9,23 @@ function Header() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await getCurrentUser();
+        const user = await getCurrentUser();
         setIsAuthenticated(true);
+        console.log('Пользователь авторизован:', user);
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          console.error('Пользователь не авторизован.');
-          navigate('/');
-        } else if (error.response && error.response.status === 403) {
-          console.error('Неверный токен.');
-          navigate('/');
-        } else {
-          console.error('Неизвестная ошибка:', error.message);
-        }
+        console.error('Ошибка авторизации:', error.response?.data || error.message);
+        setIsAuthenticated(false);
       }
     };
-  
+
     checkAuth();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await logoutUser(); // Выход из системы
+      await logoutUser();
       setIsAuthenticated(false);
-      navigate('/login'); // Перенаправление на страницу входа
+      navigate('/login');
     } catch (error) {
       console.error('Ошибка при выходе:', error);
       alert('Не удалось выйти из системы.');
