@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../api/employee'; // Импорт функций API
-import { updateRole } from '../api/auth'; // Импорт API-функции для обновления роли
+import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../api/employee';
+import { getCurrentUser, updateRole } from '../api/auth'; // Импорт правильной функции для проверки авторизации
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
+import { useNavigate } from 'react-router-dom'; // Для редиректа
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -17,26 +18,33 @@ function Employees() {
     contactInfo: '',
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Вы не авторизованы. Перенаправляем на страницу входа.');
-        window.location.href = '/'; // Перенаправление на страницу входа
-        return;
-      }
-  
       try {
+        const currentUser = await getCurrentUser();
+        console.log('Пользователь авторизован:', currentUser);
+
+        if (currentUser.role !== 'admin') {
+          alert('У вас нет доступа к этой странице.');
+          navigate('/'); // Перенаправление на главную страницу или страницу логина
+          return;
+        }
+
         const data = await fetchEmployees();
         setEmployees(data);
       } catch (error) {
-        console.error('Ошибка при загрузке сотрудников:', error);
+        console.error('Ошибка проверки авторизации или загрузки сотрудников:', error);
+        alert('Вы не авторизованы. Перенаправляем на страницу входа.');
+        navigate('/'); // Перенаправление на страницу входа
       }
     };
-  
-    checkAuth();
-  }, []);
 
+    checkAuth();
+  }, [navigate]);
+
+  // Остальной код остался без изменений
   const handleSearch = () => {
     const filtered = employees.filter((employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,10 +60,8 @@ function Employees() {
   const handleSave = async () => {
     try {
       if (modalData.id) {
-        // Обновление сотрудника
         await updateEmployee(modalData.id, modalData);
       } else {
-        // Создание нового сотрудника
         await createEmployee(modalData);
       }
       setIsModalOpen(false);
@@ -81,8 +87,7 @@ function Employees() {
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      const token = localStorage.getItem('token');
-      await updateRole(userId, newRole, token); // Вызов API-функции для обновления роли
+      await updateRole(userId, newRole); // Передача роли через API
       alert('Роль успешно обновлена.');
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
@@ -167,7 +172,6 @@ function Employees() {
         </tbody>
       </table>
 
-      {/* Модальное окно */}
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
           <div className="space-y-4">

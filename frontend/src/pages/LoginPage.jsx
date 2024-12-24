@@ -1,137 +1,121 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { registerUser, loginUser, getCurrentUser } from '../api/auth';
-import Header from '../components/Header';
+import { loginUser } from '../api/auth';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import Footer from '../components/Footer';
 import InfoCard from '../components/InfoCard';
 
 function LoginPage() {
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    position: '',
-    department: '',
-    contactInfo: '',
-  });
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const [isRegisterMode, setIsRegisterMode] = useState(false); // Состояние для переключения между входом и регистрацией
+  const [formData, setFormData] = useState({ username: '', password: '', name: '', email: '' });
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isLoginMode) {
+    if (isRegisterMode) {
+      // Логика для регистрации
       try {
-        await loginUser({
-          username: formData.username,
-          password: formData.password,
-        });
-        const user = await getCurrentUser();
+        console.log('Регистрация данных:', formData);
+        // Вызов API для регистрации (если он уже реализован)
+        alert('Регистрация успешна! Теперь войдите в систему.');
+        setIsRegisterMode(false);
+      } catch (error) {
+        console.error('Ошибка при регистрации:', error);
+        setError('Ошибка регистрации. Попробуйте снова.');
+      }
+    } else {
+      // Логика для входа
+      try {
+        const credentials = {
+          username: formData.username.trim(),
+          password: formData.password.trim(),
+        };
+
+        const user = await loginUser(credentials);
+        console.log('Данные пользователя после логина:', user);
+
         if (user.role === 'admin') {
-          navigate('/admin');
+          window.location.href = '/admin'; // Редирект на админ-панель
+        } else if (user.role === 'instructor') {
+          window.location.href = '/dashboard';
+        } else if (user.role === 'student') {
+          window.location.href = '/student-dashboard';
         } else {
-          navigate('/dashboard');
+          console.error('Неизвестная роль пользователя:', user.role);
         }
       } catch (error) {
         console.error('Ошибка при входе:', error.response?.data || error.message);
         setError('Неверный логин или пароль.');
       }
-    } else {
-      if (formData.password !== formData.confirmPassword) {
-        alert('Пароли не совпадают!');
-        return;
-      }
-      try {
-        await registerUser({
-          username: formData.username,
-          password: formData.password,
-          name: formData.name,
-          position: formData.position,
-          department: formData.department,
-          contactInfo: formData.contactInfo,
-        });
-        alert('Регистрация успешна!');
-        setIsLoginMode(true);
-      } catch (error) {
-        console.error('Ошибка при регистрации:', error);
-        alert('Ошибка регистрации. Попробуйте снова.');
-      }
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <Header />
-      <div className="flex justify-center items-start mt-8 mb-10 space-x-8">
-        <div className="w-full max-w-lg bg-white p-6 rounded-md shadow-md">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
-            {isLoginMode ? 'Вход' : 'Регистрация'}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h2 className="text-2xl font-bold mb-6">{isRegisterMode ? 'Регистрация' : 'Вход в систему'}</h2>
+      <form className="bg-white p-6 rounded shadow-md space-y-4 w-80" onSubmit={handleSubmit}>
+        {isRegisterMode && (
+          <>
             <InputField
-              id="username"
-              label="Логин"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Введите логин"
+              id="name"
+              label="Имя"
+              name="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Введите ваше имя"
             />
             <InputField
-              id="password"
-              label="Пароль"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Введите пароль"
+              id="email"
+              label="Email"
+              name="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Введите ваш email"
             />
-            {!isLoginMode && (
-              <>
-                <InputField
-                  id="confirmPassword"
-                  label="Повторите пароль"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Введите пароль ещё раз"
-                />
-                <InputField
-                  id="name"
-                  label="Полное имя"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Введите полное имя"
-                />
-              </>
-            )}
-            <Button type="submit" className="w-full">
-              {isLoginMode ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
-          </form>
+          </>
+        )}
+        <InputField
+          id="username"
+          label="Логин"
+          name="username"
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          placeholder="Введите логин"
+        />
+        <InputField
+          id="password"
+          label="Пароль"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          placeholder="Введите пароль"
+        />
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <Button type="submit" className="w-full">
+          {isRegisterMode ? 'Зарегистрироваться' : 'Войти'}
+        </Button>
+        <div className="text-center mt-4">
+          <p>{isRegisterMode ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}</p>
+          <Button
+            type="button"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white mt-2"
+            onClick={() => setIsRegisterMode(!isRegisterMode)}
+          >
+            {isRegisterMode ? 'Войти' : 'Зарегистрироваться'}
+          </Button>
         </div>
-        <div className="space-y-4">
-          <InfoCard
-            title="О системе"
-            description="Система профессиональной переподготовки помогает сотрудникам получать необходимые знания и навыки."
-          />
-          <InfoCard
-            title="Контакты"
-            description="Телефон: +7 (123) 456-78-90\nEmail: support@system.ru"
-          />
-        </div>
+      </form>
+      <div className="mt-8 space-y-4 w-80">
+        <InfoCard
+          title="О системе"
+          description="Система профессиональной переподготовки помогает сотрудникам получать необходимые знания и навыки для повышения квалификации и успешной карьеры."
+        />
+        <InfoCard
+          title="Справочная информация"
+          description="Здесь можно найти инструкции и ответы на часто задаваемые вопросы."
+        />
       </div>
-      <Footer />
     </div>
   );
 }

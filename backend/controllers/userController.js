@@ -112,7 +112,12 @@ export const login = async (req, res) => {
     });
 
     console.log('Токен записан в Cookies:', token);
-    res.status(200).json({ message: 'Logged in successfully.' });
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      message: 'Logged in successfully.',
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

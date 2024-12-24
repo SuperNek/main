@@ -3,54 +3,50 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser } from '../api/auth';
 
 function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchUser = async () => {
       try {
-        const user = await getCurrentUser();
-        setIsAuthenticated(true);
-        console.log('Пользователь авторизован:', user);
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
       } catch (error) {
-        console.error('Ошибка авторизации:', error.response?.data || error.message);
-        setIsAuthenticated(false);
+        console.error('Ошибка получения пользователя:', error.response?.data || error.message);
+        setUser(null);
       }
     };
 
-    checkAuth();
+    fetchUser();
   }, []);
 
   const handleLogout = async () => {
     try {
       await logoutUser();
-      setIsAuthenticated(false);
       navigate('/login');
     } catch (error) {
       console.error('Ошибка при выходе:', error);
-      alert('Не удалось выйти из системы.');
     }
   };
 
   return (
-    <header className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
-      <div className="flex justify-center items-center">
-        <img
-          src="https://apps3proxy.mosmetro.tech/webapp-mosmetro/mm-logo-red.svg"
-          alt="Логотип"
-          className="h-10"
-          style={{ marginRight: '20px' }}
-        />
+    <header className="bg-white shadow-md py-4 px-6 border-b border-gray-200 flex justify-between items-center">
+      <div className="flex items-center space-x-4">
+        <img src="https://apps3proxy.mosmetro.tech/webapp-mosmetro/mm-logo-red.svg" alt="Логотип" className="h-8" />
         <h1 className="text-2xl font-bold text-red-600">Профессиональная переподготовка</h1>
-        {isAuthenticated && (
+      </div>
+
+      {user && (
+        <div className="flex items-center space-x-4">
+          <span className="text-gray-700 font-semibold">{user.username}</span>
           <button
             onClick={handleLogout}
-            className="ml-4 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
           >
             Выйти
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }
