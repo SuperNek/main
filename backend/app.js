@@ -13,11 +13,17 @@ import scheduleRoutes from './routes/scheduleRoutes.js';
 import performanceRoutes from './routes/performanceRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-// Initialize Express app
 const app = express();
 app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
+
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true, 
+  })
+);
 
 createDefaultAdmin();
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/auth';
+const API_BASE_URL = 'http://localhost:8000/api/auth';
 
 axios.defaults.withCredentials = true;
 
@@ -13,7 +13,6 @@ export const loginUser = async (credentials) => {
   const response = await axios.post(`${API_BASE_URL}/login`, credentials);
   return response.data;
 };
-
 export const getCurrentUser = async () => {
   const response = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true });
   return response.data;
@@ -37,9 +36,7 @@ export const updateUser = async (userData, token) => {
   return response.data;
 };
 
-export const logoutUser = async (token) => {
-  const response = await axios.post(`${API_BASE_URL}/logout`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const logoutUser = async () => {
+  const response = await axios.post(`${API_BASE_URL}/logout`, {}, { withCredentials: true });
   return response.data;
 };

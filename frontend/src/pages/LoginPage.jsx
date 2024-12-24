@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { registerUser, loginUser } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { registerUser, loginUser, getCurrentUser } from '../api/auth';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
@@ -17,6 +18,8 @@ function LoginPage() {
     department: '',
     contactInfo: '',
   });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,14 +31,24 @@ function LoginPage() {
 
     if (isLoginMode) {
       try {
-        const data = await loginUser({
+        // Вход пользователя
+        await loginUser({
           username: formData.username,
           password: formData.password,
         });
-        alert('Успешный вход!');
-        localStorage.setItem('token', data.token);
+
+        // Получение данных о текущем пользователе
+        const user = await getCurrentUser();
+
+        // Редирект на страницу в зависимости от роли
+        if (user.role === 'admin') {
+          navigate('/admin'); // Редирект на панель администратора
+        } else {
+          navigate('/dashboard'); // Редирект на основную панель
+        }
       } catch (error) {
-        alert('Неверный логин или пароль.');
+        console.error('Ошибка при входе:', error);
+        setError('Неверный логин или пароль.');
       }
     } else {
       if (formData.password !== formData.confirmPassword) {
@@ -44,6 +57,7 @@ function LoginPage() {
       }
 
       try {
+        // Регистрация нового пользователя
         await registerUser({
           username: formData.username,
           password: formData.password,
@@ -55,6 +69,7 @@ function LoginPage() {
         alert('Регистрация успешна!');
         setIsLoginMode(true);
       } catch (error) {
+        console.error('Ошибка при регистрации:', error);
         alert('Ошибка регистрации. Попробуйте снова.');
       }
     }

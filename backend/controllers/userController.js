@@ -118,18 +118,20 @@ export const login = async (req, res) => {
 };
 
 export const verifyToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const token = req.cookies.token; // Извлекаем токен из Cookies
 
   if (!token) {
-    return res.status(401).json({ error: 'Authorization token is required.' });
+    console.error('Токен отсутствует.');
+    return res.status(401).json({ error: 'Токен отсутствует.' });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
+    req.user = decoded; // Передаем данные пользователя в следующий middleware
     next();
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid or expired token.' });
+  } catch (error) {
+    console.error('Ошибка проверки токена:', error.message);
+    return res.status(403).json({ error: 'Неверный токен.' });
   }
 };
 
@@ -142,13 +144,21 @@ export const checkRole = (role) => (req, res, next) => {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
+    const userId = req.user.userId;
+    const user = await User.findByPk(userId);
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: 'Пользователь не найден.' });
     }
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    });
+  } catch (error) {
+    console.error('Ошибка получения пользователя:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера.' });
   }
 };
 
@@ -184,6 +194,7 @@ export const refreshToken = (req, res) => {
 
     res.cookie('token', newToken, {
       httpOnly: true,
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: JWT_EXPIRES_IN * 1000,
     });
