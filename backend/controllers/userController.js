@@ -103,7 +103,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: 'Invalid username or password.' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '4d' });
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -120,22 +120,24 @@ export const login = async (req, res) => {
 
 export const verifyToken = (req, res, next) => {
   const token = req.cookies.token; // Извлекаем токен из Cookies
+  console.log('Токен из Cookies:', token); // Логируем токен
 
   if (!token) {
-    console.error('Токен отсутствует в Cookies.');
+    console.error('Токен отсутствует.');
     return res.status(401).json({ error: 'Токен отсутствует.' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
-    console.log('Токен успешно декодирован:', decoded);
-    req.user = decoded; // Передаем данные пользователя в следующий middleware
+    console.log('Токен успешно декодирован:', decoded); // Логируем декодированные данные
+    req.user = decoded; // Сохраняем данные пользователя в запросе
     next();
   } catch (error) {
     console.error('Ошибка проверки токена:', error.message);
-    return res.status(403).json({ error: 'Неверный токен.' });
+    return res.status(403).json({ error: 'Неверный токен или токен истек.' });
   }
 };
+
 
 
 export const checkRole = (role) => (req, res, next) => {
@@ -147,7 +149,9 @@ export const checkRole = (role) => (req, res, next) => {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    console.log('Декодированные данные пользователя:', req.user);
+
+    const userId = req.user.id;
     const user = await User.findByPk(userId);
 
     if (!user) {
