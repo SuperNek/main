@@ -111,6 +111,7 @@ export const login = async (req, res) => {
       maxAge: JWT_EXPIRES_IN * 100000,
     });
 
+    console.log('Токен записан в Cookies:', token);
     res.status(200).json({ message: 'Logged in successfully.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -121,12 +122,13 @@ export const verifyToken = (req, res, next) => {
   const token = req.cookies.token; // Извлекаем токен из Cookies
 
   if (!token) {
-    console.error('Токен отсутствует.');
+    console.error('Токен отсутствует в Cookies.');
     return res.status(401).json({ error: 'Токен отсутствует.' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
+    console.log('Токен успешно декодирован:', decoded);
     req.user = decoded; // Передаем данные пользователя в следующий middleware
     next();
   } catch (error) {
@@ -134,6 +136,7 @@ export const verifyToken = (req, res, next) => {
     return res.status(403).json({ error: 'Неверный токен.' });
   }
 };
+
 
 export const checkRole = (role) => (req, res, next) => {
   if (req.user.role !== role) {
