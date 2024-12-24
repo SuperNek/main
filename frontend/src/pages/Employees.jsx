@@ -30,54 +30,17 @@ function Employees() {
     loadEmployees();
   }, []);
 
-  const handleSearch = () => {
-    const filtered = employees.filter((employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setEmployees(filtered);
-  };
-
-  const handleEdit = (employee) => {
-    setModalData(employee);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    try {
-      if (modalData.id) {
-        await updateEmployee(modalData.id, modalData);
-      } else {
-        await createEmployee(modalData);
-      }
-      setIsModalOpen(false);
-      const data = await fetchEmployees();
-      setEmployees(data);
-    } catch (error) {
-      console.error('Ошибка при сохранении сотрудника:', error);
-    }
-  };
-
-  const handleDelete = async (employeeId) => {
-    try {
-      await deleteEmployee(employeeId);
-      setEmployees((prevEmployees) =>
-        prevEmployees.filter((employee) => employee.id !== employeeId)
-      );
-    } catch (error) {
-      console.error('Ошибка при удалении сотрудника:', error);
-    }
-  };
-
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await updateRole(userId, newRole);
+      const updatedEmployee = await updateRole(userId, newRole);
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
-          emp.userId === userId ? { ...emp, role: newRole } : emp
+          emp.userId === userId ? { ...emp, role: updatedEmployee.role } : emp
         )
       );
     } catch (error) {
       console.error('Ошибка при изменении роли:', error);
+      alert('Ошибка при изменении роли.');
     }
   };
 
@@ -104,7 +67,7 @@ function Employees() {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Введите имя сотрудника"
         />
-        <Button className="px-4 py-2 text-sm" onClick={handleSearch}>
+        <Button className="px-4 py-2 text-sm" onClick={() => {}}>
           Найти
         </Button>
       </div>
@@ -138,13 +101,10 @@ function Employees() {
               </td>
               <td className="border border-gray-300 p-2">{employee.contactInfo}</td>
               <td className="border border-gray-300 p-2 space-x-2">
-                <Button className="px-4 py-2 text-sm" onClick={() => handleEdit(employee)}>
+                <Button className="px-4 py-2 text-sm" onClick={() => {}}>
                   Редактировать
                 </Button>
-                <Button
-                  className="px-4 py-2 text-sm"
-                  onClick={() => handleDelete(employee.id)}
-                >
+                <Button className="px-4 py-2 text-sm" onClick={() => {}}>
                   Удалить
                 </Button>
               </td>
@@ -152,7 +112,6 @@ function Employees() {
           ))}
         </tbody>
       </table>
-
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
           <div className="space-y-4">
@@ -184,7 +143,7 @@ function Employees() {
               value={modalData.contactInfo}
               onChange={(e) => setModalData({ ...modalData, contactInfo: e.target.value })}
             />
-            <Button className="w-full" onClick={handleSave}>
+            <Button className="w-full" onClick={() => {}}>
               Сохранить
             </Button>
           </div>

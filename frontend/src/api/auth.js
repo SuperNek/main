@@ -27,7 +27,6 @@ export const getCurrentUser = async () => {
     const response = await axios.get(`${API_BASE_URL}/me`, {
       withCredentials: true, // Убедитесь, что токен из cookies отправляется
     });
-    console.log('Ответ сервера на /auth/me:', response.data); // Логируем ответ
     return response.data; // Возвращаем данные пользователя
   } catch (error) {
     console.error('Ошибка при проверке авторизации:', error.response?.data || error.message);
@@ -36,15 +35,13 @@ export const getCurrentUser = async () => {
 };
 
 
-export const updateRole = async (userId, role, token) => {
-  const response = await axios.put(
-    `${API_BASE_URL}/update-role`,
-    { userId, role },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return response.data;
+export const updateRole = async (userId, role) => {
+    const response = await axios.post(
+      `${API_BASE_URL}/update-role`,
+      { userId, role },
+      { withCredentials: true }
+    );
+    return response.data;
 };
 
 export const updateUser = async (userData, token) => {
